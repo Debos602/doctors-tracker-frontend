@@ -20,10 +20,11 @@ import { AdmissionsChart, AgeChart } from './charts';
 import { DASHBOARD_DEFAULTS, DASHBOARD_RANGES, toRange, type DashboardRange } from './queries';
 
 export function DashboardView() {
-  const { state, setState } = useUrlState(DASHBOARD_DEFAULTS);
+  const { state, setState, isPending: navigating } = useUrlState(DASHBOARD_DEFAULTS);
   const rangeKey = toRange(state.range);
   const range = DASHBOARD_RANGES[rangeKey];
   const { data, isPending, isError, error, refetch, isFetching, isPlaceholderData } = useDashboard(rangeKey);
+  const busy = navigating || (isFetching && isPlaceholderData);
 
   return (
     <>
@@ -46,8 +47,8 @@ export function DashboardView() {
           <ErrorState message={error.message} onRetry={() => refetch()} />
         </div>
       ) : (
-        <div className={cn('relative grid gap-5', isPlaceholderData && 'opacity-70 transition-opacity')}>
-          <FetchingBar active={isFetching && isPlaceholderData} />
+        <div aria-busy={busy} className={cn('relative grid gap-5 transition-opacity', busy && 'opacity-70')}>
+          <FetchingBar active={busy} />
           <Census data={data} />
           <Kpis data={data} rangeLabel={range.label} />
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">

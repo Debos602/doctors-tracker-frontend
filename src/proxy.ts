@@ -64,6 +64,16 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Everything except NextAuth's own routes, Next internals and static files.
-  matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico|icon.svg|.*\\.(?:png|jpg|jpeg|svg|webp|ico)$).*)'],
+  matcher: [
+    {
+      // Everything except NextAuth's own routes, Next internals and static files…
+      source: '/((?!api/auth|_next/static|_next/image|favicon.ico|icon.svg|.*\\.(?:png|jpg|jpeg|svg|webp|ico)$).*)',
+      // …and link prefetches. A page full of links would otherwise rotate the token
+      // once per prefetch. Prefetched pages still check the session themselves (DAL).
+      missing: [
+        { type: 'header', key: 'next-router-prefetch' },
+        { type: 'header', key: 'purpose', value: 'prefetch' },
+      ],
+    },
+  ],
 };

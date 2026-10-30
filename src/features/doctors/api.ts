@@ -23,11 +23,11 @@ export function useDoctorFilterOptions() {
 }
 
 /** Small, name-sorted result set for the doctor picker. */
-export function useDoctorOptions(q: string, enabled: boolean) {
+export function useDoctorOptions(search: string, enabled: boolean) {
   return useQuery({
-    queryKey: queryKeys.doctors.options(q),
+    queryKey: queryKeys.doctors.options(search),
     queryFn: async ({ signal }) =>
-      (await api<Doctor[]>('/doctors', { query: { q, limit: 20, sortBy: 'name', order: 'asc' }, signal })).data,
+      (await api<Doctor[]>('/doctors', { query: { search, limit: 20, sortBy: 'name', order: 'asc' }, signal })).data,
     enabled,
     placeholderData: keepPreviousData,
     staleTime: 60_000,

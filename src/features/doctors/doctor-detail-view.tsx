@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Building2, CalendarPlus, Mail, Pencil, Phone, Trash2, UserX } from 'lucide-react';
-import { Avatar } from '@/components/ui/avatar';
+import { DoctorAvatar } from '@/components/ui/avatar';
 import { Button, buttonClass } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState, ErrorState } from '@/components/ui/states';
@@ -60,7 +60,7 @@ export function DoctorDetailView({ id }: { id: string }) {
       <section className="mb-8 grid gap-6 rounded-xl border border-line bg-surface p-5 sm:p-6 lg:grid-cols-[1fr_minmax(0,28rem)]">
         <div className="min-w-0">
           <div className="flex items-start gap-4">
-            <Avatar name={doctor.name} className="size-14 text-lg" />
+            <DoctorAvatar className="size-14" iconClassName="size-7" />
             <div className="min-w-0">
               <h1 className="text-2xl font-semibold tracking-tight">{doctor.name}</h1>
               <p className="text-ink-2">{doctor.specialization}</p>

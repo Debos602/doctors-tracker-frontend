@@ -49,7 +49,7 @@ export function Providers({ children, session, timezone }: ProvidersProps) {
   return (
     <SessionProvider session={session} refetchOnWindowFocus={false}>
       <SessionSync />
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
         <QueryClientProvider client={queryClient}>
           <TimezoneProvider initial={timezone}>{children}</TimezoneProvider>
           <Toaster position="top-right" closeButton toastOptions={{ className: 'font-sans' }} />

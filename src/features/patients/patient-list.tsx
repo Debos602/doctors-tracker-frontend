@@ -32,7 +32,7 @@ interface PatientListProps {
  */
 export function PatientList({ doctor }: PatientListProps) {
   const { isAdmin } = useCurrentUser();
-  const { state, setState, reset, activeCount } = useUrlState(PATIENT_LIST_DEFAULTS);
+  const { state, setState, reset, activeCount, isPending: navigating } = useUrlState(PATIENT_LIST_DEFAULTS);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Patient | null>(null);
   const [deleting, setDeleting] = useState<Patient | null>(null);
@@ -40,7 +40,8 @@ export function PatientList({ doctor }: PatientListProps) {
 
   const { data, isPending, isError, error, refetch, isFetching, isPlaceholderData } = usePatients(state, doctor?._id);
 
-  const onSearch = useCallback((q: string) => setState({ q }), [setState]);
+  const busy = navigating || (isFetching && isPlaceholderData);
+  const onSearch = useCallback((search: string) => setState({ search }), [setState]);
 
   const openCreate = () => {
     setEditing(null);
@@ -67,7 +68,7 @@ export function PatientList({ doctor }: PatientListProps) {
     <section aria-label={doctor ? `${doctor.name}’s patients` : 'Patients'}>
       <div className="mb-4 flex flex-col gap-3">
         <div className="flex flex-col gap-2 sm:flex-row">
-          <SearchInput value={state.q} onChange={onSearch} placeholder="Search by name, phone, email or diagnosis" className="flex-1" />
+          <SearchInput value={state.search} onChange={onSearch} placeholder="Search by name, phone, email or diagnosis" className="flex-1" />
           <Button onClick={openCreate} className="sm:order-last">
             <Plus /> Add patient
           </Button>
@@ -98,7 +99,7 @@ export function PatientList({ doctor }: PatientListProps) {
       </div>
 
       <div className="relative overflow-hidden rounded-xl border border-line bg-surface">
-        <FetchingBar active={isFetching && isPlaceholderData} />
+        <FetchingBar active={busy} />
         {isPending ? (
           <PatientsTableSkeleton rows={Math.min(10, Number(state.limit) || 10)} />
         ) : isError ? (
@@ -120,7 +121,7 @@ export function PatientList({ doctor }: PatientListProps) {
             />
           )
         ) : (
-          <div className={isPlaceholderData ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
+          <div aria-busy={busy} className={busy ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
             <PatientsTable
               patients={data.items}
               showDoctor={!doctor}

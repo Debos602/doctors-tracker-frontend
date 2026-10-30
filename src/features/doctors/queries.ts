@@ -21,7 +21,7 @@ export const DOCTOR_SORTS = {
 export const DOCTOR_LIST_DEFAULTS = {
   page: '1',
   limit: '10',
-  q: '',
+  search: '',
   specialization: '',
   hospital: '',
   from: '',
@@ -35,7 +35,7 @@ export function toDoctorParams(state: DoctorListState, tz: string): DoctorListPa
   return {
     page: Math.max(1, Number(state.page) || 1),
     limit: Math.min(100, Math.max(1, Number(state.limit) || 10)),
-    q: state.q || undefined,
+    search: state.search || undefined,
     specialization: state.specialization || undefined,
     hospital: state.hospital || undefined,
     from: zonedDayToIso(state.from, 'start', tz),

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CONDITION_META, GENDER_LABEL } from '@/lib/constants';
-import { formatDate } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import type { Patient } from '@/types/api';
 import { ConditionBadge } from './condition-badge';
 
@@ -43,59 +43,79 @@ function Actions({ patient, canDelete, deleteMode, onEdit, onDelete }: Omit<Pati
   );
 }
 
+/** Keeps the row menu in view even if a very long name makes the table scroll sideways. */
+const PINNED = 'sticky right-0 bg-surface transition-colors group-hover:bg-surface-2';
+
 /** Coloured edge marks each row's condition at a glance (the badge repeats it in words). */
 const edge = (patient: Patient) => ({ boxShadow: `inset 3px 0 0 ${CONDITION_META[patient.condition].color}` });
 
 export function PatientsTable({ patients, showDoctor = true, ...actions }: PatientsTableProps) {
   return (
     <>
-      {/* Desktop */}
-      <table className="hidden w-full text-sm md:table">
-        <thead>
-          <tr className="border-b border-line text-left text-[13px] text-muted">
-            <th scope="col" className="py-3 pr-3 pl-5 font-medium">Patient</th>
-            <th scope="col" className="px-3 py-3 font-medium">Age</th>
-            <th scope="col" className="px-3 py-3 font-medium">Condition</th>
-            <th scope="col" className="hidden px-3 py-3 font-medium xl:table-cell">Diagnosis</th>
-            {showDoctor && <th scope="col" className="px-3 py-3 font-medium">Doctor</th>}
-            <th scope="col" className="px-3 py-3 font-medium">Admitted</th>
-            <th scope="col" className="w-12 py-3 pr-4"><span className="sr-only">Actions</span></th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-line">
-          {patients.map((patient) => (
-            <tr key={patient._id} className="transition-colors hover:bg-surface-2" style={edge(patient)}>
-              <td className="py-3 pr-3 pl-5">
-                <div className="font-medium text-ink">{patient.name}</div>
-                <div className="text-[13px] text-muted">{patient.email || patient.phone}</div>
-              </td>
-              <td className="px-3 py-3 whitespace-nowrap text-ink-2 tabular-nums">
-                {patient.age} <span className="text-muted">· {GENDER_LABEL[patient.gender]}</span>
-              </td>
-              <td className="px-3 py-3">
-                <ConditionBadge condition={patient.condition} />
-              </td>
-              <td className="hidden max-w-56 truncate px-3 py-3 text-ink-2 xl:table-cell">{patient.diagnosis || '—'}</td>
-              {showDoctor && (
-                <td className="px-3 py-3">
-                  {patient.doctor ? (
-                    <Link href={`/doctors/${patient.doctor._id}`} className="text-ink-2 underline-offset-4 hover:text-primary hover:underline">
-                      {patient.doctor.name}
-                    </Link>
-                  ) : (
-                    <span className="text-muted">—</span>
-                  )}
-                  {patient.doctor && <div className="text-[13px] text-muted">{patient.doctor.specialization}</div>}
-                </td>
-              )}
-              <td className="px-3 py-3 whitespace-nowrap text-ink-2 tabular-nums">{formatDate(patient.admissionDate)}</td>
-              <td className="py-3 pr-4 text-right">
-                <Actions patient={patient} {...actions} />
-              </td>
+      {/* Desktop. Columns that don't fit fold into the row on narrower screens; the menu column is pinned. */}
+      <div className="hidden overflow-x-auto md:block">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-line text-left text-[13px] text-muted">
+              <th scope="col" className="py-3 pr-3 pl-5 font-medium">Patient</th>
+              <th scope="col" className="hidden px-3 py-3 font-medium 2xl:table-cell">Age</th>
+              <th scope="col" className="px-3 py-3 font-medium">Condition</th>
+              <th scope="col" className="hidden px-3 py-3 font-medium xl:table-cell">Diagnosis</th>
+              {showDoctor && <th scope="col" className="px-3 py-3 font-medium">Doctor</th>}
+              <th scope="col" className="px-3 py-3 font-medium">Admitted</th>
+              <th scope="col" className={cn(PINNED, 'w-12 py-3 pr-4')}>
+                <span className="sr-only">Actions</span>
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {patients.map((patient) => (
+              <tr key={patient._id} className="group transition-colors hover:bg-surface-2" style={edge(patient)}>
+                <td className="py-3 pr-3 pl-5">
+                  {/* max-width only works on a block inside a cell, never on the <td> itself */}
+                  <div className="max-w-52 truncate font-medium text-ink">{patient.name}</div>
+                  <div className="max-w-52 truncate text-[13px] text-muted">
+                    <span className="tabular-nums 2xl:hidden">
+                      {patient.age}, {GENDER_LABEL[patient.gender]}
+                    </span>
+                    <span className="hidden 2xl:inline">{patient.email || patient.phone}</span>
+                  </div>
+                </td>
+                <td className="hidden px-3 py-3 whitespace-nowrap text-ink-2 tabular-nums 2xl:table-cell">
+                  {patient.age} <span className="text-muted">· {GENDER_LABEL[patient.gender]}</span>
+                </td>
+                <td className="px-3 py-3">
+                  <ConditionBadge condition={patient.condition} />
+                </td>
+                <td className="hidden px-3 py-3 text-ink-2 xl:table-cell">
+                  <div className="max-w-52 truncate" title={patient.diagnosis}>{patient.diagnosis || '—'}</div>
+                </td>
+                {showDoctor && (
+                  <td className="px-3 py-3">
+                    {patient.doctor ? (
+                      <>
+                        <Link
+                          href={`/doctors/${patient.doctor._id}`}
+                          className="block max-w-40 truncate text-ink-2 underline-offset-4 hover:text-primary hover:underline"
+                        >
+                          {patient.doctor.name}
+                        </Link>
+                        <div className="max-w-40 truncate text-[13px] text-muted">{patient.doctor.specialization}</div>
+                      </>
+                    ) : (
+                      <span className="text-muted">—</span>
+                    )}
+                  </td>
+                )}
+                <td className="px-3 py-3 whitespace-nowrap text-ink-2 tabular-nums">{formatDate(patient.admissionDate)}</td>
+                <td className={cn(PINNED, 'py-3 pr-4 text-right')}>
+                  <Actions patient={patient} {...actions} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* Phone */}
       <ul className="divide-y divide-line md:hidden">

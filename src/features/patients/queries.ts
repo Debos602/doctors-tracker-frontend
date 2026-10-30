@@ -17,7 +17,7 @@ export const PATIENT_SORTS = {
 export const PATIENT_LIST_DEFAULTS = {
   page: '1',
   limit: '10',
-  q: '',
+  search: '',
   condition: '',
   gender: '',
   age: '',
@@ -40,7 +40,7 @@ export function toPatientParams(state: PatientListState, { tz, doctorId }: Scope
   return {
     page: Math.max(1, Number(state.page) || 1),
     limit: Math.min(100, Math.max(1, Number(state.limit) || 10)),
-    q: state.q || undefined,
+    search: state.search || undefined,
     condition: state.condition || undefined,
     gender: (state.gender || undefined) as PatientListParams['gender'],
     minAge: age?.min,

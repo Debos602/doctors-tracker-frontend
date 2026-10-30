@@ -1,19 +1,24 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useTransition } from 'react';
 import { parseUrlState } from '@/lib/url-state';
 
 /**
  * Filter/pagination state that lives in the URL, so it survives reloads,
  * can be shared as a link, and works with the back button. Parsed with the
  * same function server pages use, so both sides agree on the query key.
+ *
+ * Changing it re-renders the page on the server (which fetches the new data).
+ * That runs in a transition, so the current results stay on screen and
+ * `isPending` tells the view to show progress meanwhile.
  */
 export function useUrlState<T extends Record<string, string>>(defaults: T) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
   const query = searchParams.toString();
+  const [isPending, startTransition] = useTransition();
 
   // `defaults` is a module-level constant in every caller.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -29,13 +34,13 @@ export function useUrlState<T extends Record<string, string>>(defaults: T) {
       // Any filter change goes back to page 1.
       if (!('page' in patch)) params.delete('page');
       const qs = params.toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+      startTransition(() => router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false }));
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [query, pathname, router],
   );
 
-  const reset = useCallback(() => router.replace(pathname, { scroll: false }), [pathname, router]);
+  const reset = useCallback(() => startTransition(() => router.replace(pathname, { scroll: false })), [pathname, router]);
 
   const activeCount = useMemo(
     () =>
@@ -46,5 +51,5 @@ export function useUrlState<T extends Record<string, string>>(defaults: T) {
     [state],
   );
 
-  return { state, setState, reset, activeCount };
+  return { state, setState, reset, activeCount, isPending };
 }

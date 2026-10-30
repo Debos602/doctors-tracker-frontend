@@ -84,7 +84,7 @@ export interface FieldError {
 export interface DoctorListParams {
   page: number;
   limit: number;
-  q?: string;
+  search?: string;
   specialization?: string;
   hospital?: string;
   from?: string;
@@ -96,7 +96,7 @@ export interface DoctorListParams {
 export interface PatientListParams {
   page: number;
   limit: number;
-  q?: string;
+  search?: string;
   doctor?: string;
   condition?: string;
   gender?: Gender;
