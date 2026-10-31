@@ -1,6 +1,6 @@
 import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { SESSION_MAX_AGE, callAuthApi, refreshAccessToken, toUser } from './auth-api';
+import { SECURE_COOKIES, SESSION_MAX_AGE, callAuthApi, refreshAccessToken, toUser } from './auth-api';
 
 /**
  * NextAuth (Credentials) in front of the Express API.
@@ -19,6 +19,8 @@ const REFRESH_MARGIN_MS = 60_000;
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: 'jwt', maxAge: SESSION_MAX_AGE },
+  // Same rule proxy.ts and the DAL use to find the cookie.
+  useSecureCookies: SECURE_COOKIES,
   pages: { signIn: '/login' },
   providers: [
     CredentialsProvider({

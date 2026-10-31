@@ -7,7 +7,14 @@ import type { Role } from '@/types/api';
 export const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export const SESSION_MAX_AGE = 7 * 24 * 60 * 60; // matches the API's refresh-token lifetime
-export const SECURE_COOKIES = (process.env.NEXTAUTH_URL ?? '').startsWith('https://');
+/**
+ * HTTPS deployments use "__Secure-" cookie names. NextAuth, proxy.ts and the
+ * server DAL must all agree on this, so it's decided once here: from
+ * NEXTAUTH_URL when set, otherwise from Vercel's deployment environment.
+ */
+export const SECURE_COOKIES = process.env.NEXTAUTH_URL
+  ? process.env.NEXTAUTH_URL.startsWith('https://')
+  : process.env.VERCEL_ENV === 'production' || process.env.VERCEL_ENV === 'preview';
 export const SESSION_COOKIE = SECURE_COOKIES ? '__Secure-next-auth.session-token' : 'next-auth.session-token';
 
 interface BackendSession {
